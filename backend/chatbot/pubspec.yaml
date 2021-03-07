@@ -1,5 +1,5 @@
-name: chatbot
-description: A new Flutter project.
+name: chatbot_ui_final
+description: Deltahacks project using flutter as UI platform
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `pub publish`. This is preferred for private packages.
@@ -23,18 +23,17 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^0.1.2
-  http: ^0.12.0+2
-  bubble: ^1.1.9+1
 
+  flutter_dialogflow_v2: ^0.3.2
+  flutter_dialogflow: ^0.1.2
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-
-  # cupertino_icons: ^1.0.2
+  cupertino_icons: ^1.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
