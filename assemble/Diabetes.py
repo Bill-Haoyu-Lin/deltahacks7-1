@@ -13,7 +13,7 @@ from keras.callbacks import ModelCheckpoint
 import numpy as np
 '''Call function Pred()to predict the chance of getting diabetes
     sample input:pred([76,0,75,175,100,-1,0,1,1])
-    which stands for Age	Gender	Weight	Height	Pulse	Numbness	Double_vision	Trouble_seeing	Dizziness	Headache'''
+    which stands for Age Gender	Weight	Height	Pulse	Numbness	Double_vision	Trouble_seeing	Dizziness	Headache'''
 def pre(inp):
     #Age Modification#
     if inp[0]>70:
@@ -58,4 +58,4 @@ def pred(inp):
     model.fit(X_train, y_train, epochs=1, validation_split = 0.2,validation_data=(X_test, y_test))
     weights='Check-335--0.05316.hdf5'
     model.load_weights(weights)
-    return ('{}%'.format("%.2f" % (model.predict(inp)[0][0]*100)))
+    return ('{}'.format("%.2f" % (model.predict(inp)[0][0])))
