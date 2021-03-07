@@ -58,4 +58,4 @@ def pred(inp):
     model.fit(X_train, y_train, epochs=1, validation_split = 0.2,validation_data=(X_test, y_test))
     weights='Check-335--0.05316.hdf5'
     model.load_weights(weights)
-    return ('The chance of having Diabetes is {}%'.format("%.2f" % (model.predict(inp)[0][0]*100)))
+    return ('{}%'.format("%.2f" % (model.predict(inp)[0][0]*100)))
