@@ -101,13 +101,13 @@ class _HomePageDialogflow extends State<HomePageDialogflow> {
     );
 
     if(position==10&&choose_stoke ==0){
-      result_diabete[position-1]= int.parse(text)-2;
-      check_ans=0;
-      position=0;
-      start_pos=0;
+
+      result_diabete[8]= int.parse(text)-2;
+      print(result_diabete);
+
 
       Map<String, List<int>> data =  {
-        'ans' : [76,0,75,175,100,-1,0,1,0,1]
+        'ans' : result_diabete
       };
       String body = jsonEncode(data);
       var response = await http.post(
@@ -118,15 +118,24 @@ class _HomePageDialogflow extends State<HomePageDialogflow> {
           body: body);
       var data_back=jsonDecode(response.body);
       message.text = "You have a "+data_back["response"][0]+" risk on getting "+
-          data_back["response"][1]+"\n Here are our suggestions"+data_back["response"][2];
-
-    }else if(position==11&&choose_stoke ==1){
-      result_stroke[position-2]= int.parse(text)-2;
+          data_back["response"][1]+"\nHere are our suggestions"+data_back["response"][2];
       check_ans=0;
       position=0;
       start_pos=0;
+      result_diabete = new List(9);
+      result_stroke = new List(10);
+      position =0;
+      check_ans =0;
+      start_pos =0;
+      choose_stoke = -1;
+      index_value =1;
+      test = 1;
+      pass5 = 0;
+
+    }else if(position==11&&choose_stoke ==1){
+      result_stroke[9]= int.parse(text)-2;
       Map<String, List<int>> data =  {
-      'ans' : [76,0,75,175,100,-1,0,1,0,1]
+      'ans' : result_stroke
       };
       String body = jsonEncode(data);
       var response = await http.post(
@@ -138,6 +147,18 @@ class _HomePageDialogflow extends State<HomePageDialogflow> {
       var data_back=jsonDecode(response.body);
       message.text = "You have a "+data_back["response"][0]+" risk on getting "+
       data_back["response"][1]+"\n Here are our suggestions"+data_back["response"][2];
+      check_ans=0;
+      position=0;
+      start_pos=0;
+      result_diabete = new List(9);
+      result_stroke = new List(10);
+      position =0;
+      check_ans =0;
+      start_pos =0;
+      choose_stoke = -1;
+      index_value =1;
+      test = 1;
+      pass5 = 0;
     }
 
     if(position==6&&choose_stoke==-1){
@@ -151,17 +172,20 @@ class _HomePageDialogflow extends State<HomePageDialogflow> {
       position+=1;
     }else if(position!=0&&check_ans!=0){
       if(choose_stoke ==0){
-        message.text = questions_diabete[position-index_value+1+pass5]+position.toString();
-        result_diabete[position-index_value+1+pass5]= int.parse(text)-2;
+        message.text = questions_diabete[position-index_value+1+pass5];
+        result_diabete[position-index_value+pass5]= int.parse(text)-2*pass5;
         position+=1;
       }else if(position == 5){
         message.text = determine;
+        result_stroke[position-index_value+pass5]= int.parse(text)-2*pass5;
+        result_diabete[position-index_value+pass5]= int.parse(text)-2*pass5;
         index_value = 3;
         pass5 = 1;
         position+=1;
       }else{
-        message.text = questions_stroke[position-index_value+1+pass5]+position.toString();
-        result_stroke[position-index_value+1+pass5]= int.parse(text)-2;
+        message.text = questions_stroke[position-index_value+1+pass5];
+        result_stroke[position-index_value+pass5]= int.parse(text)-2*pass5;
+        result_diabete[position-index_value+pass5]= int.parse(text)-2*pass5;
         position+=1;
 
 
