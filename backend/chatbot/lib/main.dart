@@ -1,5 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_dialogflow/dialogflow_v2.dart';
+import 'package:http/http.dart' as http;
 
 void main() => runApp(new MyApp());
 
@@ -29,13 +31,15 @@ class HomePageDialogflow extends StatefulWidget {
 class _HomePageDialogflow extends State<HomePageDialogflow> {
   final List<ChatMessage> _messages = <ChatMessage>[];
   final TextEditingController _textController = new TextEditingController();
-  var result_diabete = new List(9);
-  var result_stroke = new List(10);
+  List<int> result_diabete = new List(9);
+  List<int> result_stroke = new List(10);
   var position =0;
   var check_ans =0;
   var start_pos =0;
   var choose_stoke = -1;
   var index_value =1;
+  var test = 1;
+  var pass5 = 0;
   var determine = "Do you smoke?\n1) yes\n2) no";
   var questions_stroke =["What's your age?",
     "Can I have your gender please?\n1)male\n2female\nplease enter in number)",
@@ -95,19 +99,47 @@ class _HomePageDialogflow extends State<HomePageDialogflow> {
       name: "Bot",
       type: false,
     );
+
     if(position==10&&choose_stoke ==0){
-      result_diabete[position-2]= int.parse(text)-2;
+      result_diabete[position-1]= int.parse(text)-2;
       check_ans=0;
       position=0;
       start_pos=0;
-      message.text = "Your result is pretty good"+result_diabete.toString();
+
+      Map<String, List<int>> data =  {
+        'ans' : [76,0,75,175,100,-1,0,1,0,1]
+      };
+      String body = jsonEncode(data);
+      var response = await http.post(
+          new Uri.http("localhost:5000", ''),
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+          body: body);
+      var data_back=jsonDecode(response.body);
+      message.text = "You have a "+data_back["response"][0]+" risk on getting "+
+          data_back["response"][1]+"\n Here are our suggestions"+data_back["response"][2];
+
     }else if(position==11&&choose_stoke ==1){
       result_stroke[position-2]= int.parse(text)-2;
       check_ans=0;
       position=0;
       start_pos=0;
-      message.text = "Your result is pretty good"+result_stroke.toString();
+      Map<String, List<int>> data =  {
+      'ans' : [76,0,75,175,100,-1,0,1,0,1]
+      };
+      String body = jsonEncode(data);
+      var response = await http.post(
+      new Uri.http("localhost:5000", ''),
+      headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: body);
+      var data_back=jsonDecode(response.body);
+      message.text = "You have a "+data_back["response"][0]+" risk on getting "+
+      data_back["response"][1]+"\n Here are our suggestions"+data_back["response"][2];
     }
+
     if(position==6&&choose_stoke==-1){
       if(text == "1"){
         choose_stoke=1;
@@ -119,22 +151,25 @@ class _HomePageDialogflow extends State<HomePageDialogflow> {
       position+=1;
     }else if(position!=0&&check_ans!=0){
       if(choose_stoke ==0){
-        message.text = questions_diabete[position-1];
-        result_diabete[position-index_value]= int.parse(text)-2;
-      }else {
-        message.text = questions_stroke[position-1];
-        result_stroke[position-index_value]= int.parse(text)-2;
-      }
-      if(position == 5){
+        message.text = questions_diabete[position-index_value+1+pass5]+position.toString();
+        result_diabete[position-index_value+1+pass5]= int.parse(text)-2;
+        position+=1;
+      }else if(position == 5){
         message.text = determine;
-        index_value = 2;
+        index_value = 3;
+        pass5 = 1;
+        position+=1;
+      }else{
+        message.text = questions_stroke[position-index_value+1+pass5]+position.toString();
+        result_stroke[position-index_value+1+pass5]= int.parse(text)-2;
+        position+=1;
+
 
       }
-      position+=1;
     }
 
     if(text=="1"&& position==0&&check_ans == 1){
-      message.text = questions_diabete[position];
+      message.text = questions_diabete[0];
       position = 1;
     }else if(text=="2"&& position==0&&check_ans == 1){
       message.text = bp_quote[0];
