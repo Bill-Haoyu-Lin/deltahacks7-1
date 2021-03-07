@@ -29,18 +29,34 @@ class HomePageDialogflow extends StatefulWidget {
 class _HomePageDialogflow extends State<HomePageDialogflow> {
   final List<ChatMessage> _messages = <ChatMessage>[];
   final TextEditingController _textController = new TextEditingController();
-  var result_arr = new List(9);
+  var result_diabete = new List(9);
+  var result_stroke = new List(10);
   var position =0;
   var check_ans =0;
-  var questions =["What's your age?",
+  var start_pos =0;
+  var choose_stoke = -1;
+  var index_value =1;
+  var determine = "Do you smoke?\n1) yes\n2) no";
+  var questions_stroke =["What's your age?",
     "Can I have your gender please?\n1)male\n2female\nplease enter in number)",
     "What is your most recent weight in KG?\nyou can divide pound/2.21 to convert",
     "What is your most recent height in cm?\n 1 cm = feet x 30.48",
     "Pulse if known,otherwise enter 0",
-    "How often do you go to washroom?\nrate from 1-5,\n1 mean not frequent\n5 means very frequent",
-    "How often do you feel Hungry?\nrate from 1-5,\n1 mean not frequent\n5 means very frequent",
-    "How often do you feel tired?\nrate from 1-5,\n1 mean not frequent\n5 means very frequent",
-    "How often do you drink alcohol?\nrate from 1-5,\n1 mean not frequent\n5 means very frequent",
+    "How often do you feel numbness?\nrate from 1-3,\n1 mean not frequent\n3 means very frequent",
+    "How often do you see things in double?\nrate from 1-3,\n1 mean not frequent\n3 means very frequent",
+    "How often do you have trouble seeing things?\nrate from 1-3,\n1 mean not frequent\n3 means very frequent",
+    "How often do you feel dizzy?\nrate from 1-3,\n1 mean not frequent\n3 means very frequent",
+    "How often do you have headace?\nrate from 1-3,\n1 mean not frequent\n3 means very frequent",
+  ];
+  var questions_diabete =["What's your age?",
+    "Can I have your gender please?\n1)male\n2female\nplease enter in number)",
+    "What is your most recent weight in KG?\nyou can divide pound/2.21 to convert",
+    "What is your most recent height in cm?\n 1 cm = feet x 30.48",
+    "Pulse if known,otherwise enter 0",
+    "How often do you go to washroom?\nrate from 1-3,\n1 mean not frequent\n3 means very frequent",
+    "How often do you feel Hungry?\nrate from 1-3,\n1 mean not frequent\n3 means very frequent",
+    "How often do you feel tired?\nrate from 1-3,\n1 mean not frequent\n3 means very frequent",
+    "How often do you drink alcohol?\nrate from 1-3,\n1 mean not frequent\n3 means very frequent",
   ];
   var bp_quote=[
     "Do you know that the best drink for lowering blood pressure is Tomato juice?",
@@ -79,24 +95,51 @@ class _HomePageDialogflow extends State<HomePageDialogflow> {
       name: "Bot",
       type: false,
     );
-    if(position==9){
-      result_arr[position-1]= int.parse(text);
+    if(position==10&&choose_stoke ==0){
+      result_diabete[position-2]= int.parse(text)-2;
       check_ans=0;
       position=0;
-      message.text = "Your result is pretty good"+result_arr.toString();
+      start_pos=0;
+      message.text = "Your result is pretty good"+result_diabete.toString();
+    }else if(position==11&&choose_stoke ==1){
+      result_stroke[position-2]= int.parse(text)-2;
+      check_ans=0;
+      position=0;
+      start_pos=0;
+      message.text = "Your result is pretty good"+result_stroke.toString();
     }
-    if(position!=0&&check_ans!=0){
-      message.text = questions[position];
-      result_arr[position-1]= int.parse(text);
+    if(position==6&&choose_stoke==-1){
+      if(text == "1"){
+        choose_stoke=1;
+        message.text = questions_stroke[position-1];
+      }else{
+        choose_stoke=0;
+        message.text = questions_diabete[position-1];
+      }
+      position+=1;
+    }else if(position!=0&&check_ans!=0){
+      if(choose_stoke ==0){
+        message.text = questions_diabete[position-1];
+        result_diabete[position-index_value]= int.parse(text)-2;
+      }else {
+        message.text = questions_stroke[position-1];
+        result_stroke[position-index_value]= int.parse(text)-2;
+      }
+      if(position == 5){
+        message.text = determine;
+        index_value = 2;
+
+      }
       position+=1;
     }
 
     if(text=="1"&& position==0&&check_ans == 1){
-      message.text = questions[position];
+      message.text = questions_diabete[position];
       position = 1;
     }else if(text=="2"&& position==0&&check_ans == 1){
       message.text = bp_quote[0];
       check_ans = 0;
+      start_pos=1;
     }
 
     if(text == "hello"){
@@ -104,6 +147,7 @@ class _HomePageDialogflow extends State<HomePageDialogflow> {
           +"2)Learn more about blood pressure\n"
           +"please reply with 1 or 2";
       check_ans = 1;
+      start_pos=1;
     }
 
     setState(() {
@@ -129,7 +173,7 @@ class _HomePageDialogflow extends State<HomePageDialogflow> {
     return new Scaffold(
       appBar: new AppBar(
         centerTitle: true,
-        title: new Text("Flutter and Dialogflow"),
+        title: new Text("Flutter and Blood Health Demo"),
       ),
       body: new Column(children: <Widget>[
         new Flexible(
