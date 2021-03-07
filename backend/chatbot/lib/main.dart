@@ -1,106 +1,216 @@
-import 'dart:convert';
-import 'package:bubble/bubble.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-void main() => runApp(MyApp());
+import 'package:flutter_dialogflow/dialogflow_v2.dart';
+
+void main() => runApp(new MyApp());
+
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Chatbot Flask',
-      theme: ThemeData(
-primarySwatch: Colors.blue,
+    return new MaterialApp(
+      title: 'Example Dialogflow Flutter',
+      theme: new ThemeData(
+        primarySwatch: Colors.deepOrange,
       ),
-      home: MyHomePage(title: 'Flutter & Python'),
+      debugShowCheckedModeBanner: false,
+      home: new HomePageDialogflow(),
     );
   }
 }
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-final String title;
-@override
-  _MyHomePageState createState() => _MyHomePageState();
+
+class HomePageDialogflow extends StatefulWidget {
+  HomePageDialogflow({Key key, this.title}) : super(key: key);
+
+  final String title;
+
+  @override
+  _HomePageDialogflow createState() => new _HomePageDialogflow();
 }
-class _MyHomePageState extends State<MyHomePage> {
-final GlobalKey<AnimatedListState> _listKey = GlobalKey();
-  List<String> _data = [];
-  static const String BOT_URL = "https://supercodebot.herokuapp.com"; // replace with server address
-  TextEditingController _queryController = TextEditingController();
-@override
-  Widget build(BuildContext context) {
-return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text("Flutter & Python"),
-      ),
-      body: Stack(
-        children: <Widget>[
-          AnimatedList(
-            // key to call remove and insert from anywhere
-            key: _listKey,
-            initialItemCount: _data.length,
-            itemBuilder: (BuildContext context, int index, Animation animation){
-              return _buildItem(_data[index], animation, index);
-            }
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: TextField(
-              decoration: InputDecoration(
-                icon: Icon(Icons.message, color: Colors.greenAccent,),
-                hintText: "Hello",
+
+class _HomePageDialogflow extends State<HomePageDialogflow> {
+  final List<ChatMessage> _messages = <ChatMessage>[];
+  final TextEditingController _textController = new TextEditingController();
+  var result_arr = new List(9);
+  var position =0;
+  var check_ans =0;
+  var questions =["What's your age?",
+    "Can I have your gender please?\n1)male\n2female\nplease enter in number)",
+    "What is your most recent weight in KG?\nyou can divide pound/2.21 to convert",
+    "What is your most recent height in cm?\n 1 cm = feet x 30.48",
+    "Pulse if known,otherwise enter 0",
+    "How often do you go to washroom?\nrate from 1-5,\n1 mean not frequent\n5 means very frequent",
+    "How often do you feel Hungry?\nrate from 1-5,\n1 mean not frequent\n5 means very frequent",
+    "How often do you feel tired?\nrate from 1-5,\n1 mean not frequent\n5 means very frequent",
+    "How often do you drink alcohol?\nrate from 1-5,\n1 mean not frequent\n5 means very frequent",
+  ];
+  var bp_quote=[
+    "Do you know that the best drink for lowering blood pressure is Tomato juice?",
+  ];
+  Widget _buildTextComposer() {
+    return new IconTheme(
+      data: new IconThemeData(color: Theme.of(context).accentColor),
+      child: new Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8.0),
+        child: new Row(
+          children: <Widget>[
+            new Flexible(
+              child: new TextField(
+                controller: _textController,
+                onSubmitted: _handleSubmitted,
+                decoration:
+                new InputDecoration.collapsed(hintText: "Send a message"),
               ),
-              controller: _queryController,
-              textInputAction: TextInputAction.send,
-              onSubmitted: (msg){
-this._getResponse();
-              },
-),
-          )
-        ],
-      )
-      ,
+            ),
+            new Container(
+              margin: new EdgeInsets.symmetric(horizontal: 4.0),
+              child: new IconButton(
+                  icon: new Icon(Icons.send),
+                  onPressed: () => _handleSubmitted(_textController.text)),
+            ),
+          ],
+        ),
+      ),
     );
   }
-http.Client _getClient(){
-    return http.Client();
-  }
-void _getResponse(){
-    if (_queryController.text.length>0){
-      this._insertSingleItem(_queryController.text);
-      var client = _getClient();
-      try{
-        client.post(BOT_URL, body: {"query" : _queryController.text},)
-        ..then((response){
-          Map<String, dynamic> data = jsonDecode(response.body);
-          _insertSingleItem(data['response']+"<bot>");
-});
-      }catch(e){
-        print("Failed -> $e");
-      }finally{
-        client.close();
-        _queryController.clear();
-      }
+
+  void Response(text) async {
+    _textController.clear();
+    ChatMessage message = new ChatMessage(
+      text: text,
+      name: "Bot",
+      type: false,
+    );
+    if(position==9){
+      result_arr[position-1]= int.parse(text);
+      check_ans=0;
+      position=0;
+      message.text = "Your result is pretty good"+result_arr.toString();
     }
+    if(position!=0&&check_ans!=0){
+      message.text = questions[position];
+      result_arr[position-1]= int.parse(text);
+      position+=1;
+    }
+
+    if(text=="1"&& position==0&&check_ans == 1){
+      message.text = questions[position];
+      position = 1;
+    }else if(text=="2"&& position==0&&check_ans == 1){
+      message.text = bp_quote[0];
+      check_ans = 0;
+    }
+
+    if(text == "hello"){
+      message.text = "Hello :D\nWhat can I help you with today?\n1)Check health status\n"
+          +"2)Learn more about blood pressure\n"
+          +"please reply with 1 or 2";
+      check_ans = 1;
+    }
+
+    setState(() {
+      _messages.insert(0, message);
+    });
   }
-void _insertSingleItem(String message){
-_data.add(message); 
-    _listKey.currentState.insertItem(_data.length-1);
+
+  void _handleSubmitted(String text) {
+    _textController.clear();
+    ChatMessage message = new ChatMessage(
+      text: text,
+      name: "User",
+      type: true,
+    );
+    setState(() {
+      _messages.insert(0, message);
+    });
+    Response(text);
   }
-  Widget _buildItem(String item, Animation animation,int index){
-    bool mine = item.endsWith("<bot>");
-    return SizeTransition(
-      sizeFactor: animation,
-      child: Padding(padding: EdgeInsets.only(top: 10),
-      child: Container(
-        alignment: mine ?  Alignment.topLeft : Alignment.topRight,
-child : Bubble(
-        child: Text(item.replaceAll("<bot>", "")),
-        color: mine ? Colors.blue : Colors.indigo,
-        padding: BubbleEdges.all(10),
-)),
-    )
-);
+
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      appBar: new AppBar(
+        centerTitle: true,
+        title: new Text("Flutter and Dialogflow"),
+      ),
+      body: new Column(children: <Widget>[
+        new Flexible(
+            child: new ListView.builder(
+              padding: new EdgeInsets.all(8.0),
+              reverse: true,
+              itemBuilder: (_, int index) => _messages[index],
+              itemCount: _messages.length,
+            )),
+        new Divider(height: 1.0),
+        new Container(
+          decoration: new BoxDecoration(color: Theme.of(context).cardColor),
+          child: _buildTextComposer(),
+        ),
+      ]),
+    );
+  }
+}
+
+class ChatMessage extends StatelessWidget {
+  ChatMessage({this.text, this.name, this.type});
+
+  String text;
+  final String name;
+  final bool type;
+
+  List<Widget> otherMessage(context) {
+    return <Widget>[
+      new Container(
+        margin: const EdgeInsets.only(right: 16.0),
+        child: new CircleAvatar(child: new Text('B')),
+      ),
+      new Expanded(
+        child: new Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            new Text(this.name,
+                style: new TextStyle(fontWeight: FontWeight.bold)),
+            new Container(
+              margin: const EdgeInsets.only(top: 5.0),
+              child: new Text(text),
+            ),
+          ],
+        ),
+      ),
+    ];
+  }
+
+  List<Widget> myMessage(context) {
+    return <Widget>[
+      new Expanded(
+        child: new Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: <Widget>[
+            new Text(this.name, style: Theme.of(context).textTheme.subhead),
+            new Container(
+              margin: const EdgeInsets.only(top: 5.0),
+              child: new Text(text),
+            ),
+          ],
+        ),
+      ),
+      new Container(
+        margin: const EdgeInsets.only(left: 16.0),
+        child: new CircleAvatar(
+            child: new Text(
+              this.name[0],
+              style: new TextStyle(fontWeight: FontWeight.bold),
+            )),
+      ),
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return new Container(
+      margin: const EdgeInsets.symmetric(vertical: 10.0),
+      child: new Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: this.type ? myMessage(context) : otherMessage(context),
+      ),
+    );
   }
 }
