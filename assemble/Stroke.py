@@ -23,7 +23,7 @@ def pre(inp):
     elif inp[0]<=60 and inp[0]>50:
         inp[0]=0.4
     else:
-        df.iloc[i,0]=0.2
+        inp[0]=0.2
     
     #weight Modification#
     if inp[2]>90:
