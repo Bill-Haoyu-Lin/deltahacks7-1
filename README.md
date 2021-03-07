@@ -1,1 +1,3 @@
-# deltahacks7
+# DeltaHacks7
+
+Chatbot project using flutter
